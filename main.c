@@ -6,7 +6,6 @@
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
-const int MAX_BUBBLES = 100;
 
 
 int main(int argc, char *argv[]) {

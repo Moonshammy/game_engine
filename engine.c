@@ -6,8 +6,13 @@ static bool running = false;
 
 static Uint64 last_time = 0;
 static float delta_time = 0.0f;
+static int window_width;
+static int window_height;
 
 bool engine_init(const char *title, int width, int height) {
+    window_width = width;
+    window_height = height;
+    
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return false;
@@ -72,4 +77,12 @@ SDL_Renderer* get_engine_renderer() {
 
 float get_engine_delta_time(){
     return delta_time;
+}
+
+int get_engine_window_width(){
+    return window_width;
+}
+
+int get_engine_window_height(){
+    return window_height;
 }
