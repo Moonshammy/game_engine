@@ -9,5 +9,6 @@ void engine_update();
 void engine_render();
 void engine_shutdown();
 bool engine_is_running();
+float get_engine_delta_time();
 
 #endif

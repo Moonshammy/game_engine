@@ -4,6 +4,9 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static bool running = false;
 
+static Uint64 last_time = 0;
+static float delta_time = 0.0f;
+
 bool engine_init(const char *title, int width, int height) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -27,6 +30,15 @@ bool engine_init(const char *title, int width, int height) {
 }
 
 void engine_update() {
+    //gets and sets system times to utilize for delta time
+    Uint64 now = SDL_GetPerformanceCounter();
+    if(last_time == 0) last_time = now;
+    Uint64 freq = SDL_GetPerformanceFrequency();
+
+    //uses the system times to set the delta_time
+    delta_time = (now - last_time) / (freq);
+    last_time = now;
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -52,4 +64,8 @@ void engine_shutdown() {
 
 bool engine_is_running() {
     return running;
+}
+
+float get_engine_delta_time(){
+    return delta_time;
 }
