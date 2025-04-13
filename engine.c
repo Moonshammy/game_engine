@@ -36,7 +36,7 @@ void engine_update() {
     Uint64 freq = SDL_GetPerformanceFrequency();
 
     //uses the system times to set the delta_time
-    delta_time = (now - last_time) / (freq);
+    delta_time = (float)(now - last_time) / (float)(freq);
     last_time = now;
 
     SDL_Event event;
@@ -64,6 +64,10 @@ void engine_shutdown() {
 
 bool engine_is_running() {
     return running;
+}
+
+SDL_Renderer* get_engine_renderer() {
+    return renderer;
 }
 
 float get_engine_delta_time(){
