@@ -8,6 +8,9 @@
 #define MAX_ROWS 100
 #define MAX_COLS 100
 
+#define SIDEBAR_WIDTH 300
+#define SIDEBAR_PADDING 10
+
 typedef struct {
     SDL_Color color;
     bool filled;
@@ -22,17 +25,26 @@ static int tile_size = 32;
 
 static int previous_mouse_state = 0;
 
+static int toolbar_height;
+
+static int window_width;
+static int window_height;
 
 
-void tilemap_init(int rows, int cols, int size, int sidebar_width){
-    int window_width = get_engine_window_width();
-    int window_height = get_engine_window_height();
+
+void tilemap_init(int rows, int cols, int size){
+    window_width = get_engine_window_width();
+    window_height = get_engine_window_height();
+
+    color_init(window_width, window_height, SIDEBAR_WIDTH, SIDEBAR_PADDING);
 
     tile_rows = rows;
     tile_cols = cols;
     tile_size = size;
-    int usable_width = window_width - sidebar_width;
+    int usable_width = window_width - SIDEBAR_WIDTH;
     tile_cols = usable_width / tile_size;
+
+    toolbar_height = get_toolbar_height();
 
     for(int y = 0; y < tile_rows; y++){
         for (int x = 0; x < tile_cols; x++){
@@ -46,23 +58,25 @@ void tilemap_handle_input(){
     Uint32 current_mouse_state = SDL_GetMouseState(&mx, &my);
     if ((current_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) &&
         !(previous_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT))) {
+        if (my > toolbar_height){ //prevents first row from being selected from tool bar
 
-        int col = mx / tile_size;
-        int row = my / tile_size;
+            int col = mx / tile_size;
+            int row = (my-toolbar_height) / tile_size;
 
-        if (row >= 0 && row < tile_rows && col >= 0 && col < tile_cols) {
-            tilemap[row][col].color = get_current_color();
-            tilemap[row][col].filled = true;
+            if (row >= 0 && row < tile_rows && col >= 0 && col < tile_cols) {
+                tilemap[row][col].color = get_current_color();
+                tilemap[row][col].filled = true;
+            }
         }
     }
-
+    color_handle_input();
     previous_mouse_state = current_mouse_state;
 }
 
 void tilemap_render(SDL_Renderer *renderer){
     for (int y = 0; y < tile_rows; y++) {
         for (int x = 0; x < tile_cols; x++) {
-            SDL_Rect cell = { x * tile_size, y * tile_size, tile_size, tile_size };
+            SDL_Rect cell = { x * tile_size, y * tile_size+toolbar_height, tile_size, tile_size };
 
             if (tilemap[y][x].filled) {
                 SDL_Color c = tilemap[y][x].color;
@@ -72,6 +86,10 @@ void tilemap_render(SDL_Renderer *renderer){
 
             SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
             SDL_RenderDrawRect(renderer, &cell);
+            SDL_Rect sidebar = {window_width - SIDEBAR_WIDTH, toolbar_height, SIDEBAR_WIDTH, window_height};
+            SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // Dark gray sidebar
+            SDL_RenderFillRect(renderer, &sidebar);  
+            color_render(renderer, toolbar_height);
         }
     }
 }

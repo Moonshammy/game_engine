@@ -1,5 +1,7 @@
 #include "engine.h"
 
+#include <stdbool.h>
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static bool running = false;
@@ -64,6 +66,7 @@ void engine_render() {
 void engine_shutdown() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    running = false;
     SDL_Quit();
 }
 
