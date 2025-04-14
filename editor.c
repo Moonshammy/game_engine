@@ -25,7 +25,7 @@ typedef struct {
 typedef enum {
     EDITOR_MODE_TILEMAP,
     EDITOR_MODE_SCENE,
-    EDITOR_MODE_COLOR
+    EDITOR_MODE_OPTION
 } EditorMode;
 
 static ToolbarButton toolbar_buttons[TOOLBAR_BUTTON_COUNT];
@@ -40,7 +40,7 @@ void editor_init(){
 
     toolbar_buttons[0] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Tilemap", switch_to_tilemap, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
     toolbar_buttons[1] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Scene", switch_to_scene, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
-    //toolbar_buttons[2] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Color", switch_to_color, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
+    toolbar_buttons[2] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Option", switch_to_option, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
     toolbar_buttons[3] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Quit", quit_editor, false};
 
     if (TTF_Init() < 0) {
@@ -56,20 +56,22 @@ void editor_init(){
     tilemap_init(20,25,36);
 }
 
+//switch_to function used for toolbar buttons
 void switch_to_tilemap(){
     current_mode = EDITOR_MODE_TILEMAP;
 }
-
 void switch_to_scene(){
     current_mode = EDITOR_MODE_SCENE;
 }
-
+void switch_to_option(){
+    current_mode = EDITOR_MODE_OPTION;
+}
 void quit_editor(){
     if (ui_font) {TTF_CloseFont(ui_font);}
-    TTF_Quit();
     engine_shutdown();
 }
 
+//Used for tools to know how far to go down
 int get_toolbar_height(){
     return TOOLBAR_HEIGHT;
 }
@@ -97,10 +99,6 @@ void editor_handle_input() {
 
     if (current_mode == EDITOR_MODE_SCENE) {
         scene_handle_input();
-    }
-
-    else if(current_mode == EDITOR_MODE_COLOR){
-        color_handle_input();
     }
     
     else if (current_mode == EDITOR_MODE_TILEMAP) {

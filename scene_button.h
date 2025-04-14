@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <SDL2/SDL_ttf.h>
 
 typedef struct {
     SDL_Rect bounds;
@@ -11,7 +12,7 @@ typedef struct {
     bool hovered;
 } SceneButton;
 
-void scene_button_render(SDL_Renderer* renderer, SceneButton* button);
+void scene_button_render(SDL_Renderer* renderer, TTF_Font* font, SceneButton* button);
 bool scene_button_check_click(SceneButton* button, int mx, int my);
 bool scene_button_check_hover(SceneButton* button, int mx, int my);
 

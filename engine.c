@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
 static SDL_Window *window = NULL;
@@ -67,6 +68,7 @@ void engine_shutdown() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     running = false;
+    TTF_Quit();
     SDL_Quit();
 }
 

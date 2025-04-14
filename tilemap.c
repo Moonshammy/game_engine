@@ -9,7 +9,6 @@
 #define MAX_COLS 100
 
 #define SIDEBAR_WIDTH 300
-#define SIDEBAR_PADDING 10
 
 typedef struct {
     SDL_Color color;
@@ -25,10 +24,12 @@ static int tile_size = 32;
 
 static int previous_mouse_state = 0;
 
-static int toolbar_height;
-
 static int window_width;
 static int window_height;
+
+static int toolbar_height;
+
+
 
 
 
@@ -36,11 +37,12 @@ void tilemap_init(int rows, int cols, int size){
     window_width = get_engine_window_width();
     window_height = get_engine_window_height();
 
-    color_init(window_width, window_height, SIDEBAR_WIDTH, SIDEBAR_PADDING);
+    color_init(window_width, window_height, SIDEBAR_WIDTH);
 
     tile_rows = rows;
     tile_cols = cols;
     tile_size = size;
+
     int usable_width = window_width - SIDEBAR_WIDTH;
     tile_cols = usable_width / tile_size;
 
@@ -65,7 +67,7 @@ void tilemap_handle_input(){
 
             if (row >= 0 && row < tile_rows && col >= 0 && col < tile_cols) {
                 tilemap[row][col].color = get_current_color();
-                tilemap[row][col].filled = true;
+                tilemap[row][col].filled = get_color_fill();
             }
         }
     }
@@ -89,7 +91,7 @@ void tilemap_render(SDL_Renderer *renderer){
             SDL_Rect sidebar = {window_width - SIDEBAR_WIDTH, toolbar_height, SIDEBAR_WIDTH, window_height};
             SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255); // Dark gray sidebar
             SDL_RenderFillRect(renderer, &sidebar);  
-            color_render(renderer, toolbar_height);
+            color_render(renderer);
         }
     }
 }

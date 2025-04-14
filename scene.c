@@ -1,10 +1,13 @@
 #include "scene.h"
 #include "engine.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <string.h>
 #include <stdlib.h>
 
 #define MAX_SCENES 64
+
+static TTF_Font* ui_font = NULL;
 
 static Scene scenes[MAX_SCENES];
 static int scene_count = 0;
@@ -13,6 +16,11 @@ static int current_scene_index = 0;
 void scene_init() {
     scene_count = 0;
     current_scene_index = 0;
+
+    ui_font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 16);
+    if (!ui_font) {
+        SDL_Log("Failed to load font: %s", TTF_GetError());
+    }
 }
 
 void scene_add(Scene scene) {
@@ -57,9 +65,7 @@ void scene_render() {
     SDL_Renderer* renderer = get_engine_renderer();
     Scene* scene = &scenes[current_scene_index];
 
-    if (scene->is_interactive) {
-        for (int i = 0; i < scene->button_count; i++) {
-            scene_button_render(renderer, &scene->buttons[i]);
-        }
+    for (int i = 0; i < scene->button_count; i++) {
+        scene_button_render(renderer, ui_font, &scene->buttons[i]);
     }
 }
