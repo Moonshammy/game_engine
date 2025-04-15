@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "engine.h"
 #include "editor.h"
+#include "font.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -14,6 +15,7 @@ int main(int argc, char *argv[]) {
     }
 
     editor_init(20,25,32);
+    font_init();
 
     while (engine_is_running()) {
         engine_update();
@@ -30,6 +32,8 @@ int main(int argc, char *argv[]) {
         SDL_Delay(16); // Roughly 60 FPS
         SDL_RenderPresent(renderer);
     }
+    close_font();
     engine_shutdown();
+    SDL_Quit();
     return 0;
 }

@@ -2,6 +2,7 @@
 #include "engine.h"
 #include "color.h"
 #include "scene.h"
+#include "font.h"
 #include "tilemap.h"
 
 #include <SDL2/SDL.h>
@@ -34,27 +35,18 @@ ToolbarButton toolbar_buttons[55];
 static EditorMode current_mode = EDITOR_MODE_SCENE;
 static int previous_mouse_state = 0;
 
-static TTF_Font* ui_font = NULL;
+
 
 void editor_init(){
     num_tools = get_engine_window_width();
     
     int x = TOOL_PADDING;
-    int y = 0;    
+    int y = 0;
  
     toolbar_buttons[0] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Scene", switch_to_scene, false}; x += TOOL_WIDTH + TOOL_PADDING;
     toolbar_buttons[1] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Tilemap", switch_to_tilemap, false}; x += TOOL_WIDTH + TOOL_PADDING;
     toolbar_buttons[2] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Option", switch_to_option, false}; x += TOOL_WIDTH + TOOL_PADDING;
     toolbar_buttons[3] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Quit", quit_editor, false};
-
-    if (TTF_Init() < 0) {
-        SDL_Log("Failed to initialize SDL_ttf: %s", TTF_GetError());
-    }
-    
-    ui_font = TTF_OpenFont("C:/Windows/Fonts/arial.ttf", 16);
-    if (!ui_font) {
-        SDL_Log("Failed to load font: %s", TTF_GetError());
-    }
 
     scene_init();
     tilemap_init(20,25,36);
@@ -70,8 +62,8 @@ void switch_to_scene(){
 void switch_to_option(){
     current_mode = EDITOR_MODE_OPTION;
 }
+
 void quit_editor(){
-    if (ui_font) {TTF_CloseFont(ui_font);}
     engine_shutdown();
 }
 
@@ -137,7 +129,7 @@ void editor_render() {
         SDL_RenderDrawRect(renderer, &btn->bounds);
     
         SDL_Color text_color = {51, 255, 51, 255};
-        SDL_Surface* text_surface = TTF_RenderText_Blended(ui_font, btn->label, text_color);
+        SDL_Surface* text_surface = TTF_RenderText_Blended(get_font(), btn->label, text_color);
         if (text_surface) {
             SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
 
@@ -154,7 +146,7 @@ void editor_render() {
 
         SDL_FreeSurface(text_surface);
         SDL_DestroyTexture(text_texture);
-        }
+        } 
     }
 
 
@@ -165,5 +157,4 @@ void editor_render() {
     else if (current_mode == EDITOR_MODE_TILEMAP) {
         tilemap_render(renderer);
     }
-  
 }

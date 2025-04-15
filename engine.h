@@ -2,6 +2,7 @@
 #define ENGINE_H
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
 bool engine_init(const char *title, int width, int height);
