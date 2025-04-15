@@ -17,6 +17,7 @@ typedef enum {
     ERASE
 } ColorTool;
 
+static SDL_Rect tools[3];
 static SDL_Color current_color = {255,0,0,255};
 
 static int previous_mouse_state = 0;
@@ -61,6 +62,24 @@ SDL_Color color_blend(SDL_Color a, SDL_Color b, float t){
     return c;
 }
 
+void switch_to_paint(){
+    current_tool = PAINT;
+    color_fill = true;
+}
+
+void switch_to_erase(){
+    current_tool = ERASE;
+    color_fill = false;
+}
+
+SDL_Color get_current_color(){
+    return current_color;
+}
+
+bool get_color_fill(){
+    return color_fill;
+}
+
 void color_debug(SDL_Color c) {
     printf("Color RGBA = (%d, %d, %d, %d)\n", c.r, c.g, c.b, c.a);
 }
@@ -69,6 +88,13 @@ void color_handle_input(){
     int mx, my;
     Uint32 current_mouse_state = SDL_GetMouseState(&mx, &my);    
 
+    if (mx >= base_x + 45 && mx < base_x + 90 && my >= base_y && my <base_y + 40){
+        switch_to_paint;
+    }
+    else if (mx >= base_x + 90 && mx < base_x + 135 && my >= base_y && my <base_y + 40){
+        switch_to_erase;
+    }
+
     for (int c = 0; c < 3; c++) {
         int y = base_y + c * SLIDER_SPACING + SLIDER_SPACING;
         SDL_Rect bar = { base_x, y, SLIDER_WIDTH, SLIDER_HEIGHT };
@@ -76,6 +102,7 @@ void color_handle_input(){
         if ((current_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) &&
             !(previous_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT))) {
 
+            
             if (mx >= bar.x && mx <= bar.x + bar.w &&
                 my >= bar.y && my <= bar.y + bar.h) {
                 
@@ -93,24 +120,6 @@ void color_handle_input(){
             }
         }
     }
-}
-
-void switch_to_paint(){
-    current_tool = PAINT;
-    color_fill = true;
-}
-
-void switch_to_erase(){
-    current_tool = ERASE;
-    color_fill = false;
-}
-
-SDL_Color get_current_color(){
-    return current_color;
-}
-
-bool get_color_fill(){
-    return color_fill;
 }
 
 void draw_slider(SDL_Renderer *renderer, int channel, int value, int x, int y_offset){
@@ -134,9 +143,18 @@ void color_render(SDL_Renderer *renderer){
     draw_slider(renderer, CHANNEL_G, current_color.g, base_x, base_y + SLIDER_SPACING * 2);
     draw_slider(renderer, CHANNEL_B, current_color.b, base_x, base_y + SLIDER_SPACING * 3);
     
-    SDL_Rect preview = { base_x, base_y, 40, 40 };
+    SDL_Rect color_preview = {base_x, base_y, 40, 40};
     SDL_SetRenderDrawColor(renderer, current_color.r, current_color.g, current_color.b, current_color.a);
-    SDL_RenderFillRect(renderer, &preview);
+    SDL_RenderFillRect(renderer, &color_preview);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDrawRect(renderer, &preview);
+    SDL_RenderDrawRect(renderer, &color_preview);
+
+    tools[0] = (SDL_Rect){base_x + 45, base_y, 40, 40};
+    tools[1] = (SDL_Rect){base_x + 90, base_y, 40, 40};
+    for (int i = 0; i < 2; i++){
+        SDL_SetRenderDrawColor(renderer, 0,0,0,255);
+        SDL_RenderFillRect(renderer, &tools[i]);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(renderer, &tools[i]);
+    }
 }

@@ -8,12 +8,11 @@
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
+//These values only get tweaked.
 #define TOOLBAR_HEIGHT 40
-#define TOOLBAR_BUTTON_WIDTH 100
-#define TOOLBAR_BUTTON_HEIGHT TOOLBAR_HEIGHT
-#define TOOLBAR_BUTTON_PADDING 8
-#define TOOLBAR_BUTTON_COUNT 4
-
+#define TOOL_HEIGHT TOOLBAR_HEIGHT
+#define TOOL_WIDTH 100
+#define TOOL_PADDING 8
 typedef struct {
     SDL_Rect bounds;
     char label[32];
@@ -21,27 +20,32 @@ typedef struct {
     bool selected;
 } ToolbarButton;
 
-
 typedef enum {
     EDITOR_MODE_TILEMAP,
     EDITOR_MODE_SCENE,
     EDITOR_MODE_OPTION
 } EditorMode;
 
-static ToolbarButton toolbar_buttons[TOOLBAR_BUTTON_COUNT];
+static int num_tools;
+
+//default 55, since technically an ultrawide could support that many tools... I don't see having more than 15 or so tools ever being displayed.
+ToolbarButton toolbar_buttons[55];
+
 static EditorMode current_mode = EDITOR_MODE_SCENE;
 static int previous_mouse_state = 0;
 
 static TTF_Font* ui_font = NULL;
 
 void editor_init(){
-    int x = TOOLBAR_BUTTON_PADDING;
-    int y = 0;
-
-    toolbar_buttons[0] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Tilemap", switch_to_tilemap, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
-    toolbar_buttons[1] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Scene", switch_to_scene, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
-    toolbar_buttons[2] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Option", switch_to_option, false}; x += TOOLBAR_BUTTON_WIDTH + TOOLBAR_BUTTON_PADDING;
-    toolbar_buttons[3] = (ToolbarButton){{x, y, TOOLBAR_BUTTON_WIDTH, TOOLBAR_BUTTON_HEIGHT}, "Quit", quit_editor, false};
+    num_tools = get_engine_window_width();
+    
+    int x = TOOL_PADDING;
+    int y = 0;    
+ 
+    toolbar_buttons[0] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Scene", switch_to_scene, false}; x += TOOL_WIDTH + TOOL_PADDING;
+    toolbar_buttons[1] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Tilemap", switch_to_tilemap, false}; x += TOOL_WIDTH + TOOL_PADDING;
+    toolbar_buttons[2] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Option", switch_to_option, false}; x += TOOL_WIDTH + TOOL_PADDING;
+    toolbar_buttons[3] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Quit", quit_editor, false};
 
     if (TTF_Init() < 0) {
         SDL_Log("Failed to initialize SDL_ttf: %s", TTF_GetError());
@@ -84,7 +88,7 @@ void editor_handle_input() {
     if ((mouse & SDL_BUTTON(SDL_BUTTON_LEFT)) &&
         !(previous_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT))) {
 
-        for (int i = 0; i < TOOLBAR_BUTTON_COUNT; i++) {
+        for (int i = 0; i < num_tools; i++) {
             SDL_Rect *r = &toolbar_buttons[i].bounds;
             if (mx >= r->x && mx <= r->x + r->w &&
                 my >= r->y && my <= r->y + r->h) {
@@ -123,13 +127,13 @@ void editor_render() {
     SDL_Rect toolbar = {0, 0, window_width, TOOLBAR_HEIGHT};
     SDL_RenderFillRect(renderer, &toolbar);
     
-    for (int i = 0; i < TOOLBAR_BUTTON_COUNT; i++) {
+    for (int i = 0; i < num_tools; i++) {
         ToolbarButton *btn = &toolbar_buttons[i];
     
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+        SDL_SetRenderDrawColor(renderer, 79, 79, 79, 255);
         SDL_RenderFillRect(renderer, &btn->bounds);
     
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(renderer, 44, 44, 44, 255);
         SDL_RenderDrawRect(renderer, &btn->bounds);
     
         SDL_Color text_color = {51, 255, 51, 255};
@@ -161,6 +165,5 @@ void editor_render() {
     else if (current_mode == EDITOR_MODE_TILEMAP) {
         tilemap_render(renderer);
     }
-
-    
+  
 }

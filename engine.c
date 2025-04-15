@@ -68,7 +68,6 @@ void engine_shutdown() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     running = false;
-    TTF_Quit();
     SDL_Quit();
 }
 

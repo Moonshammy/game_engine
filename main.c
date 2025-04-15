@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
         SDL_Delay(16); // Roughly 60 FPS
         SDL_RenderPresent(renderer);
     }
-
     engine_shutdown();
     return 0;
 }
