@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "engine.h"
 #include "font.h"
+#include "tilemap.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -39,7 +40,8 @@ typedef struct {
     bool selected;
 }Tool;
 
-
+SDL_Rect* toolbar;
+SDL_Rect* sidebar;
 
 //Used 55 to initialize, maximum supported by ultrawide monitors
 Tool tools[55];
@@ -65,7 +67,9 @@ void editor_init(int window_width, int window_height){
 void editor_quit(){
     engine_shutdown();
 }
+
 void editor_start_tilemap(){
+
     sidebar_active = true;
 }
 void editor_start_scene(){
@@ -75,6 +79,12 @@ void editor_start_options(){
     sidebar_active = false;
 }
 
+SDL_Rect* editor_get_toolbar(){
+    return toolbar;
+}
+SDL_Rect* editor_get_sidebar(){
+
+}
 
 void editor_handle_input(){
     int mx, my;

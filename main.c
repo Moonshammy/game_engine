@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
 
     editor_init(WINDOW_WIDTH, WINDOW_HEIGHT);
     font_init();
+    tilemap_init();
 
     while (engine_is_running()) {
         engine_update();

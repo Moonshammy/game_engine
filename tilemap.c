@@ -9,11 +9,6 @@
 #define MAX_ROWS 100
 #define MAX_COLS 100
 
-#define MAX_ROWS_TOOLS 5
-#define MAX_COLS_TOOLS 100
-
-#define SIDEBAR_WIDTH 300
-
 typedef struct {
     SDL_Color color;
     bool filled;
@@ -27,7 +22,9 @@ typedef struct{
 
 enum Channel { CHANNEL_R = 0, CHANNEL_G = 1, CHANNEL_B = 2 };
 
-static ToolSlot slotmap[MAX_ROWS_TOOLS][MAX_COLS_TOOLS];
+//FIXME!
+//static ToolSlot slotmap[MAX_ROWS_TOOLS][MAX_COLS_TOOLS];
+
 
 static Tile tilemap[MAX_ROWS][MAX_COLS];
 static int tile_rows = 0;
@@ -39,30 +36,17 @@ static int previous_mouse_state = 0;
 static int window_width;
 static int window_height;
 
-static int toolbar_height_start;
 
-void tilemap_init(int rows, int cols, int size){
+void tilemap_init(){
     window_width = get_engine_window_width();
     window_height = get_engine_window_height();
 
-    tile_rows = rows;
-    tile_cols = cols;
-    tile_size = size;
-
-    int usable_width = window_width - SIDEBAR_WIDTH;
-    tile_cols = usable_width / tile_size;
-
-    toolbar_height_start = get_toolbar_height();
 
     for(int y = 0; y < tile_rows; y++){
         for (int x = 0; x < tile_cols; x++){
             tilemap[y][x].filled = false;
         }
     }
-}
-
-int tilemap_get_sidebar_width(){
-    return SIDEBAR_WIDTH;
 }
 
 void tilemap_handle_input(){
