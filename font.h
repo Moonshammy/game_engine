@@ -4,7 +4,8 @@
 #include <SDL2/SDL_ttf.h>
 
 void font_init();
-TTF_Font* get_font();
-void close_font();
+void font_set(char *font_name[]);
+TTF_Font* font_get();
+void font_shutdown();
 
 #endif

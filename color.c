@@ -1,6 +1,7 @@
 #include "color.h"
 #include "engine.h"
 #include "editor.h"
+#include "tilemap.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
@@ -17,7 +18,6 @@ typedef enum {
     ERASE
 } ColorTool;
 
-static SDL_Rect tools[3];
 static SDL_Color current_color = {255,0,0,255};
 
 static int previous_mouse_state = 0;
@@ -33,11 +33,11 @@ static bool color_fill = true;
 static ColorTool current_tool = PAINT;
 
 
-void color_init(int width, int height, int SIDEBAR_WIDTH){
+void color_init(int width, int height){
     window_width = width;
     window_height = height;
 
-    base_x = window_width - SIDEBAR_WIDTH + padding;
+    base_x = window_width - tilemap_get_sidebar_width() + padding;
     base_y = get_toolbar_height() + padding;
 
     current_color = color_create(255, 0, 0, 255);
@@ -142,19 +142,11 @@ void color_render(SDL_Renderer *renderer){
     draw_slider(renderer, CHANNEL_R, current_color.r, base_x, base_y + SLIDER_SPACING);
     draw_slider(renderer, CHANNEL_G, current_color.g, base_x, base_y + SLIDER_SPACING * 2);
     draw_slider(renderer, CHANNEL_B, current_color.b, base_x, base_y + SLIDER_SPACING * 3);
-    
+
     SDL_Rect color_preview = {base_x, base_y, 40, 40};
     SDL_SetRenderDrawColor(renderer, current_color.r, current_color.g, current_color.b, current_color.a);
     SDL_RenderFillRect(renderer, &color_preview);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &color_preview);
-
-    tools[0] = (SDL_Rect){base_x + 45, base_y, 40, 40};
-    tools[1] = (SDL_Rect){base_x + 90, base_y, 40, 40};
-    for (int i = 0; i < 2; i++){
-        SDL_SetRenderDrawColor(renderer, 0,0,0,255);
-        SDL_RenderFillRect(renderer, &tools[i]);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &tools[i]);
-    }
+    
 }

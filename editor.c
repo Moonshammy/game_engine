@@ -1,160 +1,110 @@
 #include "editor.h"
 #include "engine.h"
-#include "color.h"
-#include "scene.h"
 #include "font.h"
-#include "tilemap.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 
-//These values only get tweaked.
-#define TOOLBAR_HEIGHT 40
-#define TOOL_HEIGHT TOOLBAR_HEIGHT
-#define TOOL_WIDTH 100
-#define TOOL_PADDING 8
-typedef struct {
-    SDL_Rect bounds;
-    char label[32];
-    void (*on_click)();  // Function pointer to execute when clicked
-    bool selected;
-} ToolbarButton;
+int w_width;
+int w_height;
+
+int toolbar_height = 45;
+int toolbar_width;
+int tool_height = 45;
+int tool_width = 90;
+int tool_padding = 10;
+int num_tools; //Used to dictate how many tools can be onscreen due to monitor size
 
 typedef enum {
-    EDITOR_MODE_TILEMAP,
-    EDITOR_MODE_SCENE,
-    EDITOR_MODE_OPTION
-} EditorMode;
+    MODE_TILEMAP,
+    MODE_SCENE,
+    MODE_QUIT
+} Editor_Mode;
 
-static int num_tools;
+typedef struct {
+    SDL_Rect bounds;
+    char name[32];
+    void (*onclick)();
+    bool selected;
+}Tool;
 
-//default 55, since technically an ultrawide could support that many tools... I don't see having more than 15 or so tools ever being displayed.
-ToolbarButton toolbar_buttons[55];
+//Used 55 to initialize, maximum supported by ultrawide monitors
+Tool tools[55];
 
-static EditorMode current_mode = EDITOR_MODE_SCENE;
-static int previous_mouse_state = 0;
-
-
-
-void editor_init(){
-    num_tools = get_engine_window_width();
+void editor_init(int window_width, int window_height){
+    w_width = window_width;
+    w_height = window_height;
     
-    int x = TOOL_PADDING;
+    int x = tool_padding;
     int y = 0;
- 
-    toolbar_buttons[0] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Scene", switch_to_scene, false}; x += TOOL_WIDTH + TOOL_PADDING;
-    toolbar_buttons[1] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Tilemap", switch_to_tilemap, false}; x += TOOL_WIDTH + TOOL_PADDING;
-    toolbar_buttons[2] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Option", switch_to_option, false}; x += TOOL_WIDTH + TOOL_PADDING;
-    toolbar_buttons[3] = (ToolbarButton){x, y, TOOL_WIDTH, TOOL_HEIGHT, "Quit", quit_editor, false};
+    toolbar_width = window_width;
+    tool_padding = 10;
+    num_tools = window_width / (tool_padding+tool_width);
+        
+    tools[0] = (Tool){x,y,tool_width,tool_height,"Tilemap",NULL,false}; x = x + tool_padding + tool_width;
+    tools[1] = (Tool){x,y,tool_width,tool_height,"Scene",NULL,false}; x = x + tool_padding + tool_width;
+    tools[2] = (Tool){x,y,tool_width,tool_height,"Options",NULL,false}; x = x + tool_padding + tool_width;
+    tools[3] = (Tool){x,y,tool_width,tool_height,"Quit",NULL,false}; x = x + tool_padding + tool_width;
 
-    scene_init();
-    tilemap_init(20,25,36);
-}
 
-//switch_to function used for toolbar buttons
-void switch_to_tilemap(){
-    current_mode = EDITOR_MODE_TILEMAP;
-}
-void switch_to_scene(){
-    current_mode = EDITOR_MODE_SCENE;
-}
-void switch_to_option(){
-    current_mode = EDITOR_MODE_OPTION;
 }
 
-void quit_editor(){
+void editor_quit(){
     engine_shutdown();
 }
 
-//Used for tools to know how far to go down
-int get_toolbar_height(){
-    return TOOLBAR_HEIGHT;
-}
+void editor_handle_input(){
 
-
-void editor_handle_input() {
-    int mx, my;
-    Uint32 mouse = SDL_GetMouseState(&mx, &my);
-
-    if ((mouse & SDL_BUTTON(SDL_BUTTON_LEFT)) &&
-        !(previous_mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT))) {
-
-        for (int i = 0; i < num_tools; i++) {
-            SDL_Rect *r = &toolbar_buttons[i].bounds;
-            if (mx >= r->x && mx <= r->x + r->w &&
-                my >= r->y && my <= r->y + r->h) {
-                if (toolbar_buttons[i].on_click) {
-                    toolbar_buttons[i].on_click();
-                }
-            }
-        }
-    }
-
-    previous_mouse_state = mouse;
-
-    if (current_mode == EDITOR_MODE_SCENE) {
-        scene_handle_input();
-    }
-    
-    else if (current_mode == EDITOR_MODE_TILEMAP) {
-        tilemap_handle_input();
-    }
 }
 
 void editor_update(float dt){
-    if (current_mode == EDITOR_MODE_SCENE) {
-        scene_update(dt);
-    }
+
 }
 
-void editor_render() {
-    //Establishes window dimensions and renderer to use for later calculations
-    int window_width = get_engine_window_width();
-    int window_height = get_engine_window_height();
-    SDL_Renderer *renderer = get_engine_renderer();
+void editor_create_text_rect(SDL_Color color, char *name, SDL_Rect rect){
+    SDL_Renderer *renderer = engine_get_renderer();
+    SDL_Surface* text_surface = TTF_RenderText_Blended(font_get(), name, color);
+    if (text_surface){
+        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer,text_surface);
 
-    //Creates toolbar for tools
-    SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-    SDL_Rect toolbar = {0, 0, window_width, TOOLBAR_HEIGHT};
-    SDL_RenderFillRect(renderer, &toolbar);
-    
-    for (int i = 0; i < num_tools; i++) {
-        ToolbarButton *btn = &toolbar_buttons[i];
-    
-        SDL_SetRenderDrawColor(renderer, 79, 79, 79, 255);
-        SDL_RenderFillRect(renderer, &btn->bounds);
-    
-        SDL_SetRenderDrawColor(renderer, 44, 44, 44, 255);
-        SDL_RenderDrawRect(renderer, &btn->bounds);
-    
-        SDL_Color text_color = {51, 255, 51, 255};
-        SDL_Surface* text_surface = TTF_RenderText_Blended(get_font(), btn->label, text_color);
-        if (text_surface) {
-            SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+        int text_w = text_surface->w;
+        int text_h = text_surface->h;
+        SDL_Rect text_rect = {
+            rect.x + (rect.w - text_w) / 2,
+            rect.y + (rect.h - text_h) / 2,
+            text_w,
+            text_h
+       };
 
-            int text_w = text_surface->w;
-            int text_h = text_surface->h;
-            SDL_Rect text_rect = {
-                btn->bounds.x + (btn->bounds.w - text_w) / 2,
-                btn->bounds.y + (btn->bounds.h - text_h) / 2,
-                text_w,
-                text_h
-            };
+    SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
 
-        SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
-
-        SDL_FreeSurface(text_surface);
-        SDL_DestroyTexture(text_texture);
-        } 
+    SDL_FreeSurface(text_surface);
+    SDL_DestroyTexture(text_texture);
     }
 
+}
 
-    if (current_mode == EDITOR_MODE_SCENE) {
-        scene_render();
+void editor_render(){
+    SDL_Renderer *renderer = engine_get_renderer();
+    //Draw Toolbar
+    SDL_Rect toolbar = {0,0,toolbar_width,tool_height};
+    SDL_SetRenderDrawColor(renderer,45,45,45,225);
+    //SDL_RenderDrawRect(renderer,&toolbar);
+    SDL_RenderFillRect(renderer,&toolbar);
+
+    for (int i = 0; i <num_tools; i++){
+        Tool *button = &tools[i];
+        //Fills the tool rectangles
+        SDL_SetRenderDrawColor(renderer,79,79,79,255);
+        SDL_RenderFillRect(renderer, &button->bounds);
+        //Outlines the tool rectangles
+        SDL_SetRenderDrawColor(renderer,55,55,55,255);
+        SDL_RenderDrawRect(renderer, &button->bounds);
+
+        SDL_Color tooltext_color = {51,255,51,255};
+        editor_create_text_rect(tooltext_color, button->name, button->bounds);
+        
     }
-    
-    else if (current_mode == EDITOR_MODE_TILEMAP) {
-        tilemap_render(renderer);
-    }
+
 }

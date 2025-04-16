@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
-void color_init(int width, int height, int SIDEBAR_WIDTH);
+void color_init(int width, int height);
 SDL_Color color_create(Uint8 red, Uint8 green, Uint8 blue, Uint8 alpha);
 bool color_equals(SDL_Color a, SDL_Color b);
 SDL_Color color_blend(SDL_Color a, SDL_Color b, float t);

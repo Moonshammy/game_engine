@@ -1,7 +1,7 @@
-#include "engine.h"
-
 #include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
+
+#include "engine.h"
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -75,18 +75,10 @@ bool engine_is_running() {
     return running;
 }
 
-SDL_Renderer* get_engine_renderer() {
+SDL_Renderer* engine_get_renderer() {
     return renderer;
 }
 
-float get_engine_delta_time(){
+float engine_get_delta_time(){
     return delta_time;
-}
-
-int get_engine_window_width(){
-    return window_width;
-}
-
-int get_engine_window_height(){
-    return window_height;
 }

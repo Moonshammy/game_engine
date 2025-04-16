@@ -1,3 +1,4 @@
+#include "tilemap.h"
 #include "editor.h"
 #include "engine.h"
 #include "color.h"
@@ -40,15 +41,9 @@ static int window_height;
 
 static int toolbar_height_start;
 
-
-
-
-
 void tilemap_init(int rows, int cols, int size){
     window_width = get_engine_window_width();
     window_height = get_engine_window_height();
-
-    color_init(window_width, window_height, SIDEBAR_WIDTH);
 
     tile_rows = rows;
     tile_cols = cols;
@@ -64,6 +59,10 @@ void tilemap_init(int rows, int cols, int size){
             tilemap[y][x].filled = false;
         }
     }
+}
+
+int tilemap_get_sidebar_width(){
+    return SIDEBAR_WIDTH;
 }
 
 void tilemap_handle_input(){
@@ -106,10 +105,3 @@ void tilemap_render(SDL_Renderer *renderer){
         }
     }
 }
-
-
-
-/* Not known if needed
-    
-
-*/
