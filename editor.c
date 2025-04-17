@@ -23,14 +23,12 @@ int sidebar_y;
 int sidebar_height;
 int sidebar_width = 300;
 
-bool sidebar_active = false;
-
 Uint32 previous_mouse_state = 0;
 
 typedef enum {
     MODE_TILEMAP,
     MODE_SCENE,
-    MODE_QUIT
+    MODE_OPTIONS
 } Editor_Mode;
 
 typedef struct {
@@ -40,8 +38,20 @@ typedef struct {
     bool selected;
 }Tool;
 
-SDL_Rect* toolbar;
-SDL_Rect* sidebar;
+typedef struct{
+    SDL_Rect bounds;
+    Uint8 r;
+    Uint8 b;
+    Uint8 g;
+    Uint8 a;
+    char name[32];
+    bool active;
+} Zones;
+
+Zones toolbar;
+Zones sidebar;
+
+Editor_Mode mode = MODE_OPTIONS;
 
 //Used 55 to initialize, maximum supported by ultrawide monitors
 Tool tools[55];
@@ -55,7 +65,11 @@ void editor_init(int window_width, int window_height){
     toolbar_width = window_width;
     tool_padding = 10;
     max_tools = window_width / (tool_padding+tool_width);
-        
+    
+    toolbar = (Zones){0,0,toolbar_width,tool_height,45,45,45,225,"Toolbar",true};
+    sidebar = (Zones){w_width-sidebar_width, toolbar_height, sidebar_width, w_height-toolbar_height,
+        30,30,30,225,"Sidebar",false};
+
     tools[0] = (Tool){x,y,tool_width,tool_height,"Tilemap",editor_start_tilemap,false}; x = x + tool_padding + tool_width;
     tools[1] = (Tool){x,y,tool_width,tool_height,"Scene",editor_start_scene,false}; x = x + tool_padding + tool_width;
     tools[2] = (Tool){x,y,tool_width,tool_height,"Options",editor_start_options,false}; x = x + tool_padding + tool_width;
@@ -69,21 +83,23 @@ void editor_quit(){
 }
 
 void editor_start_tilemap(){
-
-    sidebar_active = true;
+    sidebar.active = true;
+    mode = MODE_TILEMAP;
 }
 void editor_start_scene(){
-    sidebar_active = false;
+    sidebar.active = false;
+    mode = MODE_SCENE;
 }
 void editor_start_options(){
-    sidebar_active = false;
+    sidebar.active = false;
+    mode = MODE_OPTIONS;
 }
 
 SDL_Rect* editor_get_toolbar(){
-    return toolbar;
+    return &toolbar.bounds;
 }
 SDL_Rect* editor_get_sidebar(){
-
+    return &sidebar.bounds;
 }
 
 void editor_handle_input(){
@@ -134,9 +150,8 @@ void editor_create_text_rect(SDL_Color color, char *name, SDL_Rect rect){
 void editor_render(){
     SDL_Renderer *renderer = engine_get_renderer();
     //Draw Toolbar
-    SDL_Rect toolbar = {0,0,toolbar_width,tool_height};
-    SDL_SetRenderDrawColor(renderer,45,45,45,225);
-    SDL_RenderFillRect(renderer,&toolbar);
+    SDL_SetRenderDrawColor(renderer,toolbar.r,toolbar.g,toolbar.b,toolbar.a);
+    SDL_RenderFillRect(renderer,&toolbar.bounds);
 
     for (int i = 0; i <num_tools; i++){
         Tool *button = &tools[i];
@@ -150,10 +165,19 @@ void editor_render(){
         SDL_Color tooltext_color = {51,255,51,255};
         editor_create_text_rect(tooltext_color, button->name, button->bounds);        
     }
-    if(sidebar_active){
-        SDL_Rect side = {w_width-sidebar_width, toolbar_height, sidebar_width, w_height-toolbar_height};
-        SDL_SetRenderDrawColor(renderer, 30,30,30,255);
-        SDL_RenderFillRect(renderer, &side);
+    
+    switch (mode){
+        case MODE_TILEMAP:
+            tilemap_render(renderer);
+            break;
+        case MODE_SCENE:
+            break;
+        case MODE_OPTIONS:
+            break;
     }
 
+    if(sidebar.active){;
+        SDL_SetRenderDrawColor(renderer, 30,30,30,255);
+        SDL_RenderFillRect(renderer, &sidebar.bounds);
+    }
 }

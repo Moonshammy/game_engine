@@ -1,6 +1,8 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include <SDL2/SDL.h>
+
 void editor_init(int window_width, int window_height);
 void editor_quit();
 void editor_start_tilemap();

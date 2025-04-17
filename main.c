@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "editor.h"
 #include "font.h"
+#include "tilemap.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -15,7 +16,7 @@ int main(int argc, char *argv[]) {
 
     editor_init(WINDOW_WIDTH, WINDOW_HEIGHT);
     font_init();
-    tilemap_init();
+    tilemap_init(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     while (engine_is_running()) {
         engine_update();
