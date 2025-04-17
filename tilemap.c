@@ -1,6 +1,7 @@
 #include "tilemap.h"
 #include "editor.h"
 #include "engine.h"
+#include "font.h"
 //#include "color.h"
 
 #include <SDL2/SDL.h>
@@ -25,20 +26,35 @@ typedef struct{
     SDL_Rect rect;
 }Tile;
 
+typedef struct{
+    //int ptsize;
+    //char* font[255];
+    int value;
+    SDL_Rect rect;
+    SDL_Color fill;
+    SDL_Color outline;
+    SDL_Color text_color;
+}IntInputBox;
+
+IntInputBox grid_size_button;
+
+//100x100 until redefined
 Tile tiles[100][100];
 
 void tilemap_init(int width, int height){
     window_width = width;
     window_height = height;
-    start_y = editor_get_toolbar()->h;
+    start_y = editor_get_toolbar().h;
     start_x = 0;
     boundary_y = window_height;
-    boundary_x = window_width - editor_get_sidebar()->w;
+    boundary_x = window_width - editor_get_sidebar().w;
 
     //Rest of init is broken
     tiles_width = (boundary_x - start_x) / 32;
     tiles_height = (boundary_y - start_y) / 32;
     tiles_size = 32;
+
+    grid_size_button = (IntInputBox){tiles_size, 0,0,30,20, 0,0,0,255, 50,50,50,255, 71,250,71,255};
 
     for (int x = 0; x < tiles_width; x++){
         int x_pos = (x*tiles_size) + start_x;
@@ -52,14 +68,7 @@ void tilemap_init(int width, int height){
             };
         }
     }
-}
-
-void tilemap_draw_tiles(SDL_Renderer *renderer, SDL_Color f, SDL_Color o, SDL_Rect r){
-    SDL_SetRenderDrawColor(renderer, f.r,f.b,f.g,f.a);
-    SDL_RenderFillRect(renderer,&r);
-
-    SDL_SetRenderDrawColor(renderer, o.r,o.b,o.g,o.a);
-    SDL_RenderDrawRect(renderer, &r);
+    tilemap_set_tools_pos();
 }
 
 void tilemap_set_tiles_width(int width);
@@ -67,23 +76,33 @@ void tilemap_set_tiles_height(int height);
 void tilemap_set_tiles_dimensions(int width, int height);
 void tilemap_set_size(int size);
 
-void tilemap_handle_input(){
+void tilemap_set_tools_pos(){
+    //tool to reset position of tools if sidebar changes for some reason
+    SDL_Rect sidebar = editor_get_sidebar();
+    int x = sidebar.x + 20;
+    int y = sidebar.y + 20;
 
+    grid_size_button.rect.x = x; x = grid_size_button.rect.x + 20;
+    grid_size_button.rect.y = y; y = grid_size_button.rect.y + 20;
+}
+
+
+void tilemap_handle_input(){
+}
+
+void tilemap_update(){
 }
 
 void tilemap_render(){
     SDL_Renderer *renderer = engine_get_renderer();
 
-    //Not sure this is drawing properly
+    //Draws grid to screen
     for (int x = 0; x < tiles_width; x++){
         for(int y = 0; y < tiles_height; y++){
             Tile tile = tiles[x][y];
-            SDL_Color o = tile.outline;
-            SDL_SetRenderDrawColor(renderer, tile.fill.r,tile.fill.g,tile.fill.b,tile.fill.a);
-            SDL_RenderFillRect(renderer, &tile.rect);
-
-            SDL_SetRenderDrawColor(renderer, o.r, o.g, o.b, o.r);
-            SDL_RenderDrawRect(renderer, &tile.rect);
+            editor_fill_draw_rect(tile.rect, tile.fill, tile.outline);
         }
     }
+
+    editor_fill_draw_rect(grid_size_button.rect, grid_size_button.fill, grid_size_button.outline);
 }

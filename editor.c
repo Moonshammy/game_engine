@@ -40,10 +40,7 @@ typedef struct {
 
 typedef struct{
     SDL_Rect bounds;
-    Uint8 r;
-    Uint8 b;
-    Uint8 g;
-    Uint8 a;
+    SDL_Color color;
     char name[32];
     bool active;
 } Zones;
@@ -66,7 +63,7 @@ void editor_init(int window_width, int window_height){
     tool_padding = 10;
     max_tools = window_width / (tool_padding+tool_width);
     
-    toolbar = (Zones){0,0,toolbar_width,tool_height,45,45,45,225,"Toolbar",true};
+    toolbar = (Zones){0,0,toolbar_width,tool_height, 45,45,45,225, "Toolbar",true};
     sidebar = (Zones){w_width-sidebar_width, toolbar_height, sidebar_width, w_height-toolbar_height,
         30,30,30,225,"Sidebar",false};
 
@@ -75,7 +72,6 @@ void editor_init(int window_width, int window_height){
     tools[2] = (Tool){x,y,tool_width,tool_height,"Options",editor_start_options,false}; x = x + tool_padding + tool_width;
     tools[3] = (Tool){x,y,tool_width,tool_height,"Quit",editor_quit,false}; x = x + tool_padding + tool_width;
     num_tools = 4;
-
 }
 
 void editor_quit(){
@@ -95,11 +91,49 @@ void editor_start_options(){
     mode = MODE_OPTIONS;
 }
 
-SDL_Rect* editor_get_toolbar(){
-    return &toolbar.bounds;
+SDL_Rect editor_get_toolbar(){
+    return toolbar.bounds;
 }
-SDL_Rect* editor_get_sidebar(){
-    return &sidebar.bounds;
+SDL_Rect editor_get_sidebar(){
+    return sidebar.bounds;
+}
+void editor_set_color(SDL_Color c){
+    SDL_SetRenderDrawColor(engine_get_renderer(), c.r,c.g,c.b,c.a);
+}
+
+void editor_draw_rect(SDL_Rect rect, SDL_Color c){
+    editor_set_color(c);
+    SDL_RenderDrawRect(engine_get_renderer(), &rect);
+}
+
+void editor_fill_rect(SDL_Rect rect, SDL_Color c){
+    editor_set_color(c);
+    SDL_RenderFillRect(engine_get_renderer(), &rect);
+}
+
+void editor_fill_draw_rect(SDL_Rect rect, SDL_Color fill, SDL_Color draw){
+    editor_fill_rect(rect, fill);
+    editor_draw_rect(rect, draw);
+}
+
+void editor_draw_text(SDL_Color color, char *name, SDL_Rect rect){
+    SDL_Surface* text_surface = TTF_RenderText_Blended(font_get(), name, color);
+    if (text_surface){
+        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(engine_get_renderer(),text_surface);
+
+        int text_w = text_surface->w;
+        int text_h = text_surface->h;
+        SDL_Rect text_rect = {
+            rect.x + (rect.w - text_w) / 2,
+            rect.y + (rect.h - text_h) / 2,
+            text_w,
+            text_h
+       };
+    SDL_RenderCopy(engine_get_renderer(), text_texture, NULL, &text_rect);
+
+    SDL_FreeSurface(text_surface);
+    SDL_DestroyTexture(text_texture);
+    }
 }
 
 void editor_handle_input(){
@@ -124,46 +158,26 @@ void editor_update(float dt){
 
 }
 
-void editor_create_text_rect(SDL_Color color, char *name, SDL_Rect rect){
-    SDL_Renderer *renderer = engine_get_renderer();
-    SDL_Surface* text_surface = TTF_RenderText_Blended(font_get(), name, color);
-    if (text_surface){
-        SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer,text_surface);
-
-        int text_w = text_surface->w;
-        int text_h = text_surface->h;
-        SDL_Rect text_rect = {
-            rect.x + (rect.w - text_w) / 2,
-            rect.y + (rect.h - text_h) / 2,
-            text_w,
-            text_h
-       };
-
-    SDL_RenderCopy(renderer, text_texture, NULL, &text_rect);
-
-    SDL_FreeSurface(text_surface);
-    SDL_DestroyTexture(text_texture);
-    }
-
-}
-
 void editor_render(){
     SDL_Renderer *renderer = engine_get_renderer();
     //Draw Toolbar
-    SDL_SetRenderDrawColor(renderer,toolbar.r,toolbar.g,toolbar.b,toolbar.a);
-    SDL_RenderFillRect(renderer,&toolbar.bounds);
+    editor_draw_rect(toolbar.bounds, toolbar.color);
+
+    SDL_Color fill ={79,79,79,25};
+    SDL_Color draw = {105,105,105,255};
+    SDL_Color text = {51,255,51,255};
 
     for (int i = 0; i <num_tools; i++){
         Tool *button = &tools[i];
         //Fills the tool rectangles
-        SDL_SetRenderDrawColor(renderer,79,79,79,255);
-        SDL_RenderFillRect(renderer, &button->bounds);
-        //Outlines the tool rectangles
-        SDL_SetRenderDrawColor(renderer,55,55,55,255);
-        SDL_RenderDrawRect(renderer, &button->bounds);
+        editor_fill_draw_rect(button->bounds, fill, draw);
+        //Adds text to tools
+        editor_draw_text(text, button->name, button->bounds);        
+    }
 
-        SDL_Color tooltext_color = {51,255,51,255};
-        editor_create_text_rect(tooltext_color, button->name, button->bounds);        
+    if(sidebar.active){
+        SDL_SetRenderDrawColor(renderer, 30,30,30,255);
+        SDL_RenderFillRect(renderer, &sidebar.bounds);
     }
     
     switch (mode){
@@ -176,8 +190,5 @@ void editor_render(){
             break;
     }
 
-    if(sidebar.active){;
-        SDL_SetRenderDrawColor(renderer, 30,30,30,255);
-        SDL_RenderFillRect(renderer, &sidebar.bounds);
-    }
+
 }
