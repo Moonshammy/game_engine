@@ -6,6 +6,7 @@
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 int window_width;
 int window_height;
@@ -54,7 +55,7 @@ void tilemap_init(int width, int height){
     tiles_height = (boundary_y - start_y) / 32;
     tiles_size = 32;
 
-    grid_size_button = (IntInputBox){tiles_size, 0,0,30,20, 0,0,0,255, 50,50,50,255, 71,250,71,255};
+    grid_size_button = (IntInputBox){32, 0,0,30,20, 0,0,0,255, 50,50,50,255, 71,250,71,255};
 
     for (int x = 0; x < tiles_width; x++){
         int x_pos = (x*tiles_size) + start_x;

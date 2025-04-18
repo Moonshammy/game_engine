@@ -3,6 +3,7 @@
 #include "engine.h"
 #include "editor.h"
 #include "font.h"
+#include "text.h"
 #include "tilemap.h"
 
 const int WINDOW_WIDTH = 1280;
