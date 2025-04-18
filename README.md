@@ -1,3 +1,4 @@
-At this time this project is solely for me to practice using C and SDL. It's not intended (yet) as an actual game engine.
-This game engine currently only uses c as the code.
-It uses SDL to handle low level hardware support.
+This project uses SDL2 Version 2.32.4
+The project also uses SDL2.ttf for text functions.
+
+This project is not currently intended for a game engine. It's a personal project to get a better understanding of C and lower level coding. 

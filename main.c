@@ -11,6 +11,13 @@ const int WINDOW_HEIGHT = 720;
 
 
 int main(int argc, char *argv[]) {
+    SDL_version compiled;
+    SDL_version linked;
+    SDL_VERSION(&compiled);
+    SDL_GetVersion(&linked);
+    SDL_Log("Complied with SDL Version %d.%d.%d", compiled.major,compiled.minor,compiled.patch);
+    SDL_Log("Linked with SDL Version %d.%d.%d", linked.major,linked.minor,linked.patch);
+
     if (!engine_init("My Little Engine", WINDOW_WIDTH, WINDOW_HEIGHT)) {
         return 1;
     }

@@ -47,6 +47,7 @@ void textbuffer_move_gap(TextBuffer* tb, int position){
         tb->gap_start = position;
         tb->gap_end -= move_size;
     }
+
     if (position > tb->gap_end){
         int move_size = position - tb->gap_start;
         memmove(tb->buffer + tb->gap_start, tb->buffer + tb->gap_end, move_size);
