@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #define INITIAL_BUFFER_SIZE 128
 #define GAP_SIZE 16
@@ -10,18 +11,34 @@ typedef struct{
     int gap_start;
     int gap_end;
     int capacity;
+    bool capped;
 } TextBuffer;
 
-TextBuffer* textbuffer_create_new(){
+TextBuffer* textbuffer_new(int capacity, bool capped){
+    if (capacity < 0) capacity *= -1;
     TextBuffer* tb = malloc(sizeof(TextBuffer));
-    tb->buffer = malloc(INITIAL_BUFFER_SIZE);
+    tb->buffer = malloc(capacity);
     tb->gap_start = 0;
-    tb->gap_end = GAP_SIZE;
-    tb->capacity = INITIAL_BUFFER_SIZE;
+    if (capacity > 16) tb->gap_end = GAP_SIZE;
+    else tb->gap_end = capacity;
+    tb->capacity = capacity;
+    tb->capped = capped;
     memset(tb->buffer, 0, tb->capacity);
     return tb;
-
 }
+
+TextBuffer* textbuffer_create_new(){
+    return textbuffer_new(INITIAL_BUFFER_SIZE, false);
+}
+
+//Max capacity is 16
+TextBuffer* textbuffer_create_new_capped(int capacity){
+    if (capacity > 16) capacity = 16;
+    return textbuffer_new(capacity, true);
+}
+
+
+
 
 void textbuffer_destroy(TextBuffer* tb){
     free(tb->buffer);
@@ -36,6 +53,12 @@ void textbuffer_print(TextBuffer* tb){
         putchar(tb->buffer[i]);
     }
     putchar('\n');
+}
+
+char* textbuffer_to_char(TextBuffer *tb){
+    char *final = malloc(tb->capacity-(tb->gap_end - tb->gap_start));
+    memcpy(final, tb->buffer,tb->capacity);
+    return final;
 }
 
 void textbuffer_move_gap(TextBuffer* tb, int position){
@@ -57,7 +80,7 @@ void textbuffer_move_gap(TextBuffer* tb, int position){
 }
 
 void textbuffer_insert(TextBuffer* tb, char c){
-    if(tb->gap_start == tb->gap_end){
+    if(tb->gap_start == tb->gap_end && tb->capped == false){
         int new_capacity = tb->capacity + GAP_SIZE;
         char *new_buffer = malloc(new_capacity);
         int new_gap_end = tb->gap_end + GAP_SIZE;
